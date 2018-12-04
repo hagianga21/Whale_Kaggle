@@ -8,6 +8,7 @@ from matplotlib.pyplot import imshow
 
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.model_selection import train_test_split
 from keras.preprocessing import image
 from keras.applications.imagenet_utils import preprocess_input
 from PIL import Image
@@ -37,12 +38,12 @@ class WhaleDataset(Dataset):
 
     def __getitem__(self, idx):
         print(idx)
-        img_name = os.path.join(self.datafolder, self.filenames[idx])
+        img_name = os.path.join(self.datafolder, self.filenames.values[idx][:])
         label = self.y[idx]
 
         image = Image.open(img_name).convert('RGB')
         image = self.transform(image)
-
+        print("ok")
         #image = cv2.imread(img_name)
         #image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         #image = self.transform(image=image)['image']
@@ -198,5 +199,9 @@ if __name__ == "__main__":
     }
 
     train_df = pd.read_csv("../data/train.csv")
+    print(train_df.values[1][0])
     y, label_encoder = prepare_labels(train_df['Id'])
-    print("ok")
+    print('Split data...')
+    train_img, val_img, train_labels, val_labels = train_test_split(train_df['Image'], train_df['Id'], test_size=0.2, random_state=2)
+    print("Size of Train set: ", train_img.values[9658][:])
+    print("Size of Valid set: ", train_labels.shape)

@@ -68,7 +68,8 @@ print('Split data...')
 train_img, val_img, train_labels, val_labels = train_test_split(train_df['Image'], train_df['Id'], test_size=args.val_ratio, random_state=2)
 print("Size of Train set: ", train_img.shape)
 print("Size of Valid set: ", train_labels.shape)
-
+print(train_img[0])
+print(train_labels[0])
 
 input_size = 224 
 mean=[0.485, 0.456, 0.406]
