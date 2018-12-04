@@ -37,10 +37,10 @@ class WhaleDataset(Dataset):
 
     def __getitem__(self, idx):
         if self.datatype == 'train':
-            img_name = os.path.join(self.datafolder, self.df[idx])
+            img_name = os.path.join(self.datafolder, self.filenames[idx])
             label = self.y[idx]
         elif self.datatype == 'val':
-            img_name = os.path.join(self.datafolder, self.df[idx])
+            img_name = os.path.join(self.datafolder, self.filenames[idx])
             label = self.y[idx]
         elif self.datatype == 'test':
             img_name = os.path.join(self.datafolder, self.image_files_list[idx])
