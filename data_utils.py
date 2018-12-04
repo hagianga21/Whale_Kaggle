@@ -44,12 +44,12 @@ class WhaleDataset(Dataset):
             img_name = os.path.join(self.datafolder, self.filenames[idx])
             label = self.y[idx]
 
-        #image = Image.open(img_name).convert('RGB')
-        #image = self.transform(image)
-        #image = self.transform(image)
-        image = cv2.imread(img_name)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        image = self.transform(image=image)['image']
+        image = Image.open(img_name).convert('RGB')
+        image = self.transform(image)
+
+        #image = cv2.imread(img_name)
+        #image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        #image = self.transform(image=image)['image']
 
         if self.datatype == 'test':
             # so that the images will be in a correct order
