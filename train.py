@@ -1,3 +1,4 @@
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.image as mplimg
 from matplotlib.pyplot import imshow
@@ -40,17 +41,33 @@ parser.add_argument('--val_ratio', default=0.1, type=float,
         help = "number of training samples per class")
 args = parser.parse_args()
 
+KTOP = 5 # top k error
+
+def exp_lr_scheduler(args, optimizer, epoch):
+    # after epoch 100, not more learning rate decay
+    init_lr = args.lr
+    lr_decay_epoch = 4 # decay lr after each 10 epoch
+    weight_decay = args.weight_decay
+    lr = init_lr * (0.6 ** (min(epoch, 200) // lr_decay_epoch)) 
+
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
+        param_group['weight_decay'] = weight_decay
+
+    return optimizer, lr
+
 use_gpu = torch.cuda.is_available()
 print('Loading data...')
 train_df = pd.read_csv("../data/train.csv")
+
 y, label_encoder = prepare_labels(train_df['Id'])
 print(f"There are {len(os.listdir('../data/train'))} images in train dataset with {train_df.Id.nunique()} unique classes.")
 print(f"There are {len(os.listdir('../data/test'))} images in test dataset.")
 
 print('Split data...')
 train_img, val_img, train_labels, val_labels = train_test_split(train_df['Image'], y, test_size=args.val_ratio, random_state=2)
-print(train_img.shape)
-print(val_img.shape)
+print("Size of Train set: ", train_img.shape)
+print("Size of Valid set: ", val_img.shape)
 
 input_size = 224 
 mean=[0.485, 0.456, 0.406]
@@ -71,7 +88,140 @@ data_transforms = {
 }
 
 
-train_dataset = WhaleDataset(datafolder='../data/train/', datatype='train', df=train_df, transform=data_transforms['train'], y=y)
-test_set = WhaleDataset(datafolder='../data/test/', datatype='test', transform=data_transforms['val'])
+dsets = dict()
+dsets['train'] = WhaleDataset(datafolder='../data/train/', datatype='train', filenames=train_img, y=train_labels, transform=data_transforms['train'])
+dsets['val'] = WhaleDataset(datafolder='../data/train/', datatype='val', filenames=val_img, y=val_labels, transform=data_transforms['val'])
 
-print(train_dataset.__len__())
+dset_loaders = {
+    x: torch.utils.data.DataLoader(dsets[x],
+                                   batch_size=args.batch_size,
+                                   shuffle=(x != 'val'),
+                                   num_workers=args.num_workers)
+    for x in ['train', 'val']
+}
+
+########## 
+print('Load model')
+saved_model_fn = 'resnet' + '-%s' % (args.depth) + '_' + strftime('%m%d_%H%M')
+old_model = './checkpoint/' + 'resnet' + '-%s' % (args.depth) + '_' + args.model_path + '.t7'
+if args.train_from == 2 and os.path.isfile(old_model):
+    print("| Load pretrained at  %s..." % old_model)
+    checkpoint = torch.load(old_model, map_location=lambda storage, loc: storage)
+    tmp = checkpoint['model']
+    model = unparallelize_model(tmp)
+    best_top3 = checkpoint['top3']
+    print('previous top3\t%.4f'% best_top3)
+    print('=============================================')
+else:
+    model = MyResNet(args.depth, len(train_labels))
+
+##################
+print('Start training ... ')
+criterion = nn.CrossEntropyLoss()
+model, optimizer = net_frozen(args, model)
+model = parallelize_model(model)
+
+N_train = len(train_labels)
+N_valid = len(val_labels)
+best_top3 = 1 
+t0 = time()
+
+for epoch in range(args.num_epochs):
+    optimizer, lr = exp_lr_scheduler(args, optimizer, epoch) 
+    print('#################################################################')
+    print('=> Training Epoch #%d, LR=%.10f' % (epoch + 1, lr))
+    # torch.set_grad_enabled(True)
+
+    running_loss, running_corrects, tot = 0.0, 0.0, 0.0
+    running_loss_src, running_corrects_src, tot_src = 0.0, 0.0, 0.0
+    runnning_topk_corrects = 0.0
+    ########################
+    model.train()
+    torch.set_grad_enabled(True)
+    ## Training 
+    # local_src_data = None
+    for batch_idx, (inputs, labels, _) in enumerate(dset_loaders['train']):
+        optimizer.zero_grad()
+        inputs = cvt_to_gpu(inputs)
+        labels = cvt_to_gpu(labels)
+        outputs = model(inputs)
+        loss = criterion(outputs, labels)
+        running_loss += loss*inputs.shape[0]
+        loss.backward()
+        optimizer.step()
+        ############################################
+        _, preds = torch.max(outputs.data, 1)
+        # topk 
+        top3correct, _ = mytopk(outputs.data.cpu().numpy(), labels, KTOP)
+        runnning_topk_corrects += top3correct
+        # pdb.set_trace()
+        running_loss += loss.item()
+        running_corrects += preds.eq(labels.data).cpu().sum()
+        tot += labels.size(0)
+        sys.stdout.write('\r')
+        try:
+            batch_loss = loss.item()
+        except NameError:
+            batch_loss = 0
+
+        top1error = 1 - float(running_corrects)/tot
+        top3error = 1 - float(runnning_topk_corrects)/tot
+        sys.stdout.write('| Epoch [%2d/%2d] Iter [%3d/%3d]\tBatch loss %.4f\tTop1error %.4f \tTop3error %.4f'
+                         % (epoch + 1, args.num_epochs, batch_idx + 1,
+                            (len(train_img) // args.batch_size), batch_loss/args.batch_size,
+                            top1error, top3error))
+        sys.stdout.flush()
+        sys.stdout.write('\r')
+
+    top1error = 1 - float(running_corrects)/N_train
+    top3error = 1 - float(runnning_topk_corrects)/N_train
+    epoch_loss = running_loss/N_train
+    print('\n| Training loss %.4f\tTop1error %.4f \tTop3error: %.4f'\
+            % (epoch_loss, top1error, top3error))
+
+    print_eta(t0, epoch, args.num_epochs)
+
+    ###################################
+    ## Validation
+    if (epoch + 1) % args.check_after == 0:
+        # Validation 
+        running_loss, running_corrects, tot = 0.0, 0.0, 0.0
+        runnning_topk_corrects = 0
+        torch.set_grad_enabled(False)
+        model.eval()
+        for batch_idx, (inputs, labels, _) in enumerate(dset_loaders['val']):
+            inputs = cvt_to_gpu(inputs)
+            labels = cvt_to_gpu(labels)
+            outputs = model(inputs)
+            _, preds  = torch.max(outputs.data, 1)
+            top3correct, top3error = mytopk(outputs.data.cpu().numpy(), labels, KTOP)
+            runnning_topk_corrects += top3correct
+            running_loss += loss.item()
+            running_corrects += preds.eq(labels.data).cpu().sum()
+            tot += labels.size(0)
+
+        epoch_loss = running_loss / N_valid 
+        top1error = 1 - float(running_corrects)/N_valid
+        top3error = 1 - float(runnning_topk_corrects)/N_valid
+        print('| Validation loss %.4f\tTop1error %.4f \tTop3error: %.4f'\
+                % (epoch_loss, top1error, top3error))
+
+        ################### save model based on best top3 error
+        if top3error < best_top3:
+            print('Saving model')
+            best_top3 = top3error
+            best_model = copy.deepcopy(model)
+            state = {
+                'model': best_model,
+                'top3' : best_top3,
+                'args': args
+            }
+            if not os.path.isdir('checkpoint'):
+                os.mkdir('checkpoint')
+            save_point = './checkpoint/'
+            if not os.path.isdir(save_point):
+                os.mkdir(save_point)
+
+            torch.save(state, save_point + saved_model_fn + '.t7')
+            print('=======================================================================')
+            print('model saved to %s' % (save_point + saved_model_fn + '.t7'))
