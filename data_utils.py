@@ -49,9 +49,11 @@ class WhaleDataset(Dataset):
 
         #image = Image.open(img_name).convert('RGB')
         #image = self.transform(image)
+        #image = self.transform(image)
         image = cv2.imread(img_name)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        image = self.transform(image)
+        image = self.transform(image=image)['image']
+        
         if self.datatype == 'train':
             return image, self.y[idx]
         elif self.datatype == 'test':
