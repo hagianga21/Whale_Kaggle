@@ -90,7 +90,7 @@ data_transforms = {
 
 dsets = dict()
 dsets['train'] = WhaleDataset(datafolder='../data/train/', datatype='train', filenames=train_img, y=train_labels, transform=data_transforms['train'])
-dsets['val'] = WhaleDataset(datafolder='../data/train/', datatype='val', filenames=val_img, y=val_labels, transform=data_transforms['val'])
+dsets['val'] = WhaleDataset(datafolder='../data/train/', datatype='train', filenames=val_img, y=val_labels, transform=data_transforms['val'])
 
 dset_loaders = {
     x: torch.utils.data.DataLoader(dsets[x],
