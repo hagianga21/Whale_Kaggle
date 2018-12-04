@@ -21,6 +21,7 @@ import torch.optim as optim
 import random
 import torch.backends.cudnn as cudnn
 from time import time
+import cv2
 
 class WhaleDataset(Dataset):
     def __init__(self, datafolder, datatype='train', filenames=None, y=None, transform=None):
@@ -46,7 +47,10 @@ class WhaleDataset(Dataset):
             img_name = os.path.join(self.datafolder, self.image_files_list[idx])
             label = np.zeros((5005,))
 
-        image = Image.open(img_name).convert('RGB')
+        #image = Image.open(img_name).convert('RGB')
+        #image = self.transform(image)
+        image = cv2.imread(img_name)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image = self.transform(image)
         if self.datatype == 'train':
             return image, self.y[idx]
