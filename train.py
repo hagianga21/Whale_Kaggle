@@ -140,7 +140,7 @@ for epoch in range(args.num_epochs):
     torch.set_grad_enabled(True)
     ## Training 
     # local_src_data = None
-    for batch_idx, (inputs, labels, _) in enumerate(dset_loaders['train']):
+    for batch_idx, (inputs, labels) in enumerate(dset_loaders['train']):
         optimizer.zero_grad()
         inputs = cvt_to_gpu(inputs)
         labels = cvt_to_gpu(labels)
