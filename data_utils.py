@@ -25,11 +25,11 @@ import cv2
 
 class WhaleDataset(Dataset):
     def __init__(self, datafolder, datatype='train', filenames=None, y=None, transform=None):
+        assert len(filenames) == len(y), "Number of files != number of labels"
         self.datafolder = datafolder
         self.datatype = datatype
         self.y = y
-        if self.datatype == 'train':
-            self.filenames = filenames
+        self.filenames = filenames
         self.image_files_list = [s for s in os.listdir(datafolder)]
         self.transform = transform
 
@@ -38,12 +38,8 @@ class WhaleDataset(Dataset):
 
     def __getitem__(self, idx):
         print(idx)
-        if self.datatype == 'test':
-            img_name = os.path.join(self.datafolder, self.image_files_list[idx])
-            label = np.zeros((5005,))
-        else:
-            img_name = os.path.join(self.datafolder, self.filenames[idx])
-            #label = self.y[idx]
+        img_name = os.path.join(self.datafolder, self.filenames[idx])
+        label = self.y[idx]
 
         image = Image.open(img_name).convert('RGB')
         image = self.transform(image)
@@ -51,12 +47,7 @@ class WhaleDataset(Dataset):
         #image = cv2.imread(img_name)
         #image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         #image = self.transform(image=image)['image']
-
-        if self.datatype == 'test':
-            # so that the images will be in a correct order
-            return image, label, self.image_files_list[idx]
-        else:
-            return image, self.y[idx]
+        return image, self.y[idx]
 
 def prepare_labels(y):
     values = np.array(y)
