@@ -49,7 +49,7 @@ class WhaleDataset(Dataset):
         image = Image.open(img_name).convert('RGB')
         image = self.transform(image)
         if self.datatype == 'train':
-            return image, label
+            return image, label, self.filenames[idx]
         elif self.datatype == 'test':
             # so that the images will be in a correct order
             return image, label, self.image_files_list[idx]
