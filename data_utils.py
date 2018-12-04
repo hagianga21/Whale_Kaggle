@@ -37,6 +37,7 @@ class WhaleDataset(Dataset):
         return len(self.image_files_list)
 
     def __getitem__(self, idx):
+        print(idx)
         if self.datatype == 'test':
             img_name = os.path.join(self.datafolder, self.image_files_list[idx])
             label = np.zeros((5005,))
