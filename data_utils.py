@@ -37,15 +37,12 @@ class WhaleDataset(Dataset):
         return len(self.image_files_list)
 
     def __getitem__(self, idx):
-        if self.datatype == 'train':
-            img_name = os.path.join(self.datafolder, self.filenames[idx])
-            label = self.y[idx]
-        elif self.datatype == 'val':
-            img_name = os.path.join(self.datafolder, self.filenames[idx])
-            label = self.y[idx]
-        elif self.datatype == 'test':
+        if self.datatype == 'test':
             img_name = os.path.join(self.datafolder, self.image_files_list[idx])
             label = np.zeros((5005,))
+        else:
+            img_name = os.path.join(self.datafolder, self.filenames[idx])
+            label = self.y[idx]
 
         #image = Image.open(img_name).convert('RGB')
         #image = self.transform(image)
@@ -53,12 +50,12 @@ class WhaleDataset(Dataset):
         image = cv2.imread(img_name)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image = self.transform(image=image)['image']
-        
-        if self.datatype == 'train':
-            return image, self.y[idx]
-        elif self.datatype == 'test':
+
+        if self.datatype == 'test':
             # so that the images will be in a correct order
             return image, label, self.image_files_list[idx]
+        else:
+            return image, self.y[idx]
 
 def prepare_labels(y):
     values = np.array(y)
