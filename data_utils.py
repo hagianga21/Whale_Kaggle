@@ -42,7 +42,7 @@ class WhaleDataset(Dataset):
             label = np.zeros((5005,))
         else:
             img_name = os.path.join(self.datafolder, self.filenames[idx])
-            label = self.y[idx]
+            #label = self.y[idx]
 
         image = Image.open(img_name).convert('RGB')
         image = self.transform(image)
