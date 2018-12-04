@@ -24,10 +24,9 @@ from time import time
 import cv2
 
 class WhaleDataset(Dataset):
-    def __init__(self, datafolder, datatype='train', filenames=None, y=None, transform=None):
+    def __init__(self, datafolder, filenames=None, y=None, transform=None):
         assert len(filenames) == len(y), "Number of files != number of labels"
         self.datafolder = datafolder
-        self.datatype = datatype
         self.y = y
         self.filenames = filenames
         self.image_files_list = [s for s in os.listdir(datafolder)]

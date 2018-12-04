@@ -65,9 +65,10 @@ print(f"There are {len(os.listdir('../data/train'))} images in train dataset wit
 print(f"There are {len(os.listdir('../data/test'))} images in test dataset.")
 
 print('Split data...')
-train_img, val_img, train_labels, val_labels = train_test_split(train_df['Image'], y, test_size=args.val_ratio, random_state=2)
+train_img, val_img, train_labels, val_labels = train_test_split(train_df['Image'], train_df['Id'], test_size=args.val_ratio, random_state=2)
 print("Size of Train set: ", train_img.shape)
-print("Size of Valid set: ", val_img.shape)
+print("Size of Valid set: ", train_labels.shape)
+
 
 input_size = 224 
 mean=[0.485, 0.456, 0.406]
@@ -89,13 +90,13 @@ data_transforms = {
 
 
 dsets = dict()
-dsets['train'] = WhaleDataset(datafolder='../data/train/', datatype='train', filenames=train_img, y=train_labels, transform=data_transforms['train'])
-dsets['val'] = WhaleDataset(datafolder='../data/train/', datatype='train', filenames=val_img, y=val_labels, transform=data_transforms['val'])
+dsets['train'] = WhaleDataset(datafolder='../data/train/', filenames=train_img, y=train_labels, transform=data_transforms['train'])
+dsets['val'] = WhaleDataset(datafolder='../data/train/', filenames=val_img, y=val_labels, transform=data_transforms['val'])
 
 dset_loaders = {
     x: torch.utils.data.DataLoader(dsets[x],
                                    batch_size=args.batch_size,
-                                   shuffle=(x != 'val'),
+                                   shuffle=(x == 'train'),
                                    num_workers=args.num_workers)
     for x in ['train', 'val']
 }
