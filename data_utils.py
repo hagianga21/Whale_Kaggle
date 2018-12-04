@@ -38,7 +38,7 @@ class WhaleDataset(Dataset):
 
     def __getitem__(self, idx):
         print(idx)
-        img_name = os.path.join(self.datafolder, self.filenames[idx])
+        img_name = os.path.join(self.datafolder, self.filenames.values[idx][:])
         label = self.y[idx]
 
         image = Image.open(img_name).convert('RGB')
@@ -205,6 +205,7 @@ if __name__ == "__main__":
     train_img, val_img, train_labels, val_labels = train_test_split(train_df['Image'], train_df['Id'], test_size=0.2, random_state=2)
     #print("Size of Train set: ", train_img.values[24328][:])
     print("Size of Train set: ", train_img.head)
-    print("ABC: ", train_img.values[2][:])
-    print("ABC: ", train_img[23720])
+    print("ABC: ", train_img.values[8493][:])
+    print("ABC: ", val_img[17])
+    print("ABC: ", train_img[17])
     #print("Size of Valid set: ", train_labels.shape)
