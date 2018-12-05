@@ -134,7 +134,7 @@ if args.train_from == 2 and os.path.isfile(old_model):
     print('previous top3\t%.4f'% best_top3)
     print('=============================================')
 else:
-    model = MyResNet(args.depth, len(train_labels))
+    model = MyResNet(args.depth, 5005)
 
 ##################
 print('Start training ... ')
