@@ -177,8 +177,8 @@ for epoch in range(args.num_epochs):
         ############################################
         _, preds = torch.max(outputs.data, 1)
         # topk 
-        top3correct, _ = mytopk(outputs.data.cpu().numpy(), labels, KTOP)
-        runnning_topk_corrects += top3correct
+        #top3correct, _ = mytopk(outputs.data.cpu().numpy(), labels, KTOP)
+        #runnning_topk_corrects += top3correct
         # pdb.set_trace()
         running_loss += loss.item()
         running_corrects += preds.eq(labels.data).cpu().sum()
@@ -190,19 +190,29 @@ for epoch in range(args.num_epochs):
             batch_loss = 0
 
         top1error = 1 - float(running_corrects)/tot
-        top3error = 1 - float(runnning_topk_corrects)/tot
+        #top3error = 1 - float(runnning_topk_corrects)/tot
+        '''
         sys.stdout.write('| Epoch [%2d/%2d] Iter [%3d/%3d]\tBatch loss %.4f\tTop1error %.4f \tTop3error %.4f'
                          % (epoch + 1, args.num_epochs, batch_idx + 1,
                             (len(train_img) // args.batch_size), batch_loss/args.batch_size,
                             top1error, top3error))
+        '''
+        sys.stdout.write('| Epoch [%2d/%2d] Iter [%3d/%3d]\tBatch loss %.4f\tTop1error %.4f'
+                         % (epoch + 1, args.num_epochs, batch_idx + 1,
+                            (len(train_img) // args.batch_size), batch_loss/args.batch_size,
+                            top1error))
         sys.stdout.flush()
         sys.stdout.write('\r')
 
     top1error = 1 - float(running_corrects)/N_train
-    top3error = 1 - float(runnning_topk_corrects)/N_train
+    #top3error = 1 - float(runnning_topk_corrects)/N_train
     epoch_loss = running_loss/N_train
+    '''
     print('\n| Training loss %.4f\tTop1error %.4f \tTop3error: %.4f'\
             % (epoch_loss, top1error, top3error))
+    '''
+    print('\n| Training loss %.4f\tTop1error %.4f \tTop3error: '\
+            % (epoch_loss, top1error))
 
     print_eta(t0, epoch, args.num_epochs)
 
