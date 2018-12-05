@@ -25,7 +25,7 @@ parser.add_argument('--weight_decay', default=5e-6, type=float, help='weight dec
 parser.add_argument('--finetune', '-f', action='store_true', help='Fine tune pretrained model')
 parser.add_argument('--trainer', default='adam', type = str, help = 'optimizer')
 parser.add_argument('--model_path', type=str, default = ' ')
-parser.add_argument('--batch_size', default=8, type=int)
+parser.add_argument('--batch_size', default=32, type=int)
 parser.add_argument('--num_workers', default=1, type=int)
 parser.add_argument('--num_epochs', default=1500, type=int,
                     help='Number of epochs in training')
@@ -176,6 +176,7 @@ for epoch in range(args.num_epochs):
         optimizer.step()
         ############################################
         _, preds = torch.max(outputs.data, 1)
+        print(preds.shape)
         # topk 
         #top3correct, _ = mytopk(outputs.data.cpu().numpy(), labels, KTOP)
         #runnning_topk_corrects += top3correct
