@@ -20,7 +20,7 @@ from tqdm import tqdm
 parser = argparse.ArgumentParser(description='PyTorch Digital Mammography Training')
 parser.add_argument('--lr', default=1e-2, type=float, help='learning rate')
 parser.add_argument('--net_type', default='resnet', type=str, help='model')
-parser.add_argument('--depth', default=18, choices = [18, 34, 50, 152], type=int, help='depth of model')
+parser.add_argument('--depth', default=50, choices = [18, 34, 50, 152], type=int, help='depth of model')
 parser.add_argument('--weight_decay', default=5e-6, type=float, help='weight decay')
 parser.add_argument('--finetune', '-f', action='store_true', help='Fine tune pretrained model')
 parser.add_argument('--trainer', default='adam', type = str, help = 'optimizer')
@@ -218,6 +218,26 @@ for epoch in range(args.num_epochs):
     print_eta(t0, epoch, args.num_epochs)
 
     ###################################
+    ## SAVE MODEL
+    if top3error < best_top3:
+        print('Saving model')
+        best_top3 = top3error
+        best_model = copy.deepcopy(model)
+        state = {
+            'model': best_model,
+            'top3' : best_top3,
+            'args': args
+        }
+        if not os.path.isdir('checkpoint'):
+            os.mkdir('checkpoint')
+        save_point = './checkpoint/'
+        if not os.path.isdir(save_point):
+            os.mkdir(save_point)
+
+        torch.save(state, save_point + saved_model_fn + '.t7')
+        print('=======================================================================')
+        print('model saved to %s' % (save_point + saved_model_fn + '.t7'))
+
     '''
     ## Validation
     if (epoch + 1) % args.check_after == 0:
