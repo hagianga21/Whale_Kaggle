@@ -76,7 +76,7 @@ if os.path.isfile(old_model):
 sub = pd.read_csv('../data/sample_submission.csv')
 
 model.eval()
-for batch_idx, (inputs, labels) in enumerate(test_loader):
+for batch_idx, (inputs, labels, name) in enumerate(test_loader):
     inputs = cvt_to_gpu(inputs)
     outputs = model(inputs)
 print(outputs.shape)
