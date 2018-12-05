@@ -182,7 +182,7 @@ for epoch in range(args.num_epochs):
         #runnning_topk_corrects += top3correct
         # pdb.set_trace()
         running_loss += loss.item()
-        running_corrects += preds.eq(labels.data).cpu().sum()
+        running_corrects += preds.eq(torch.max(labels.data, 1)).cpu().sum()
         tot += labels.size(0)
         sys.stdout.write('\r')
         try:
