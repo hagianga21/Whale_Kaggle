@@ -75,6 +75,14 @@ print(f"There are {len(os.listdir('../data/test'))} images in test dataset.")
 input_size = 224 
 mean=[0.485, 0.456, 0.406]
 std=[0.229, 0.224, 0.225]
+
+data_transforms =  transforms.Compose([
+        transforms.RandomResizedCrop(input_size),
+        transforms.RandomHorizontalFlip(),  # simple data augmentation
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std)
+        ])
+'''
 data_transforms = {
     'train': transforms.Compose([
         transforms.RandomResizedCrop(input_size),
@@ -89,6 +97,7 @@ data_transforms = {
         transforms.Normalize(mean, std)
         ]),
 }
+'''
 
 #dsets = dict()
 train_dataset= WhaleDataset(
