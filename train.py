@@ -168,6 +168,8 @@ for epoch in range(args.num_epochs):
         inputs = cvt_to_gpu(inputs)
         labels = cvt_to_gpu(labels)
         outputs = model(inputs)
+        print(outputs.shape)
+        print(labels.shape)
         loss = criterion(outputs, labels.float())
         running_loss += loss*inputs.shape[0]
         loss.backward()
