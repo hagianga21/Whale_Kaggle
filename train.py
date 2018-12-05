@@ -198,7 +198,7 @@ for epoch in range(args.num_epochs):
                             (len(train_img) // args.batch_size), batch_loss/args.batch_size,
                             top1error, top3error))
         '''
-        sys.stdout.write('| Epoch [%2d/%2d] Iter [%3d/%3d]\tBatch loss %.4f\tTop1error %.4f \tTop3error %.4f'
+        sys.stdout.write('| Epoch [%2d/%2d] Iter [%3d/%3d]\tBatch loss %.4f\tTop1error %.4f \tTop3error %.4f\n'
                          % (epoch + 1, args.num_epochs, batch_idx + 1,
                             (len(os.listdir('../data/train')) // args.batch_size), batch_loss/args.batch_size,
                             top1error, top3error))
@@ -212,7 +212,7 @@ for epoch in range(args.num_epochs):
     print('\n| Training loss %.4f\tTop1error %.4f \tTop3error: %.4f'\
             % (epoch_loss, top1error, top3error))
     '''
-    print('\n| Training loss %.4f\tTop1error %.4f \tTop3error: '\
+    print('\n| Training loss %.4f\tTop1error %.4f \tTop3error: %.4f'\
             % (epoch_loss, top1error, top3error))
 
     print_eta(t0, epoch, args.num_epochs)
