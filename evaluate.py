@@ -73,7 +73,7 @@ if os.path.isfile(old_model):
     print('previous top3\t%.4f'% best_top3)
     print('=============================================')
 
-sub = pd.read_csv('../input/sample_submission.csv')
+sub = pd.read_csv('../data/sample_submission.csv')
 
 model.eval()
 for (data, target, name) in tqdm(test_loader):
