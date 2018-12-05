@@ -15,6 +15,7 @@ import torch.backends.cudnn as cudnn
 import os, sys
 from time import time, strftime
 from data_utils import *
+from tqdm import tqdm
 
 parser = argparse.ArgumentParser(description='PyTorch Digital Mammography Training')
 parser.add_argument('--lr', default=1e-2, type=float, help='learning rate')
@@ -59,15 +60,15 @@ def exp_lr_scheduler(args, optimizer, epoch):
 use_gpu = torch.cuda.is_available()
 print('Loading data...')
 train_df = pd.read_csv("../data/train.csv")
-
 y, label_encoder = prepare_labels(train_df['Id'])
+train_labels = y
 print(f"There are {len(os.listdir('../data/train'))} images in train dataset with {train_df.Id.nunique()} unique classes.")
 print(f"There are {len(os.listdir('../data/test'))} images in test dataset.")
 
-print('Split data...')
-train_img, val_img, train_labels, val_labels = train_test_split(train_df['Image'], train_df['Id'], test_size=args.val_ratio, random_state=2)
-print("Size of Train set: ", train_img.shape)
-print("Size of Valid set: ", train_labels.shape)
+#print('Split data...')
+#train_img, val_img, train_labels, val_labels = train_test_split(train_df['Image'], y, test_size=args.val_ratio, random_state=2)
+#print("Size of Train set: ", train_img.shape)
+#print("Size of Valid set: ", train_labels.shape)
 #print(train_img[0])
 #print(train_labels[0])
 
@@ -89,18 +90,26 @@ data_transforms = {
         ]),
 }
 
-
 dsets = dict()
-dsets['train'] = WhaleDataset(datafolder='../data/train/', filenames=train_img, y=train_labels, transform=data_transforms['train'])
-dsets['val'] = WhaleDataset(datafolder='../data/train/', filenames=val_img, y=val_labels, transform=data_transforms['val'])
+dsets['train']= WhaleDataset(
+    datafolder='../data/train/', 
+    datatype='train', 
+    df=train_df, 
+    transform=data_transforms, 
+    y=y)
+#dsets['train'] = WhaleDataset(datafolder='../data/train/', filenames=train_img, y=train_labels, transform=data_transforms['train'])
+#dsets['val'] = WhaleDataset(datafolder='../data/train/', filenames=val_img, y=val_labels, transform=data_transforms['val'])
 
+dset_loaders = torch.utils.data.DataLoader(dsets['train'], batch_size=args.batch_size, num_workers=args.num_workers, pin_memory=True)
+'''
 dset_loaders = {
     x: torch.utils.data.DataLoader(dsets[x],
                                    batch_size=args.batch_size,
                                    shuffle=False,
                                    num_workers=args.num_workers)
-    for x in ['train', 'val']
+    for x in ['train']
 }
+'''
 #print(dset_loaders['train'].shape)
 
 ########## 
@@ -125,7 +134,7 @@ model, optimizer = net_frozen(args, model)
 model = parallelize_model(model)
 
 N_train = len(train_labels)
-N_valid = len(val_labels)
+#N_valid = len(val_labels)
 best_top3 = 1 
 t0 = time()
 
@@ -143,7 +152,8 @@ for epoch in range(args.num_epochs):
     torch.set_grad_enabled(True)
     ## Training 
     # local_src_data = None
-    for batch_idx, (inputs, labels) in enumerate(dset_loaders['train']):
+    #for batch_idx, (inputs, labels) in tqdm(enumerate(dset_loaders), total = len(dset_loaders['train'])):
+    for batch_idx, (inputs, labels) in enumerate(dset_loaders):
         optimizer.zero_grad()
         inputs = cvt_to_gpu(inputs)
         labels = cvt_to_gpu(labels)
