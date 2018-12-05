@@ -76,6 +76,12 @@ if os.path.isfile(old_model):
 sub = pd.read_csv('../data/sample_submission.csv')
 
 model.eval()
+for batch_idx, (inputs, labels) in enumerate(test_loader):
+    inputs = cvt_to_gpu(inputs)
+    outputs = model(inputs)
+print(outputs.shape)
+
+'''
 for (data, target, name) in tqdm(test_loader):
     data = cvt_to_gpu(data)
     output = model(data)
@@ -84,3 +90,4 @@ for (data, target, name) in tqdm(test_loader):
         sub.loc[sub['Image'] == n, 'Id'] = ' '.join(lab_encoder.inverse_transform(e.argsort()[-5:][::-1]))
         
 sub.to_csv('submission.csv', index=False)
+'''
