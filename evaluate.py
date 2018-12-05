@@ -45,6 +45,7 @@ args = parser.parse_args()
 input_size = 224 
 mean=[0.485, 0.456, 0.406]
 std=[0.229, 0.224, 0.225]
+train_df = pd.read_csv("../data/train.csv")
 y, label_encoder = prepare_labels(train_df['Id'])
 
 test_transforms = transforms.Compose([
