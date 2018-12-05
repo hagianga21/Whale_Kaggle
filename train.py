@@ -90,8 +90,8 @@ data_transforms = {
         ]),
 }
 
-dsets = dict()
-dsets['train']= WhaleDataset(
+#dsets = dict()
+train_dataset= WhaleDataset(
     datafolder='../data/train/', 
     datatype='train', 
     df=train_df, 
@@ -100,7 +100,7 @@ dsets['train']= WhaleDataset(
 #dsets['train'] = WhaleDataset(datafolder='../data/train/', filenames=train_img, y=train_labels, transform=data_transforms['train'])
 #dsets['val'] = WhaleDataset(datafolder='../data/train/', filenames=val_img, y=val_labels, transform=data_transforms['val'])
 
-dset_loaders = torch.utils.data.DataLoader(dsets['train'], batch_size=args.batch_size, num_workers=args.num_workers, pin_memory=True)
+dset_loaders = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, pin_memory=True)
 '''
 dset_loaders = {
     x: torch.utils.data.DataLoader(dsets[x],
