@@ -81,7 +81,7 @@ for (inputs, labels, name) in enumerate(test_loader):
     outputs = model(inputs)
     output = output.cpu().detach().numpy()
     for i, (e, n) in enumerate(list(zip(output, name))):
-        sub.loc[sub['Image'] == n, 'Id'] = ' '.join(lab_encoder.inverse_transform(e.argsort()[-5:][::-1]))
+        sub.loc[sub['Image'] == n, 'Id'] = ' '.join(label_encoder.inverse_transform(e.argsort()[-5:][::-1]))
 print(outputs.shape)
 sub.to_csv('submission.csv', index=False)
 print("Done")
