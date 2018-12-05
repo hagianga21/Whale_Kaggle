@@ -139,7 +139,7 @@ else:
 ##################
 print('Start training ... ')
 #criterion = nn.CrossEntropyLoss()
-criterion = BCEWithLogitsLoss()
+criterion = nn.BCEWithLogitsLoss()
 model, optimizer = net_frozen(args, model)
 model = parallelize_model(model)
 
