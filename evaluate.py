@@ -78,11 +78,11 @@ model = parallelize_model(model)
 model.eval()
 for (inputs, labels, name) in tqdm(test_loader):
     inputs = cvt_to_gpu(inputs)
-    outputs = model(inputs)
+    output = model(inputs)
     output = output.cpu().detach().numpy()
     for i, (e, n) in enumerate(list(zip(output, name))):
         sub.loc[sub['Image'] == n, 'Id'] = ' '.join(label_encoder.inverse_transform(e.argsort()[-5:][::-1]))
-print(outputs.shape)
+print(output.shape)
 sub.to_csv('submission.csv', index=False)
 print("Done")
 
