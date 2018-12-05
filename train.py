@@ -201,7 +201,7 @@ for epoch in range(args.num_epochs):
         '''
         sys.stdout.write('| Epoch [%2d/%2d] Iter [%3d/%3d]\tBatch loss %.4f\tTop1error %.4f'
                          % (epoch + 1, args.num_epochs, batch_idx + 1,
-                            (len(train_img) // args.batch_size), batch_loss/args.batch_size,
+                            (len(os.listdir('../data/train')) // args.batch_size), batch_loss/args.batch_size,
                             top1error))
         sys.stdout.flush()
         sys.stdout.write('\r')
