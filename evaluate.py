@@ -76,7 +76,7 @@ if os.path.isfile(old_model):
 sub = pd.read_csv('../data/sample_submission.csv')
 model = parallelize_model(model)
 model.eval()
-for (inputs, labels, name) in enumerate(test_loader):
+for (inputs, labels, name) in tqdm(test_loader):
     inputs = cvt_to_gpu(inputs)
     outputs = model(inputs)
     output = output.cpu().detach().numpy()
