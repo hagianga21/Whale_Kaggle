@@ -162,14 +162,13 @@ for epoch in range(args.num_epochs):
     torch.set_grad_enabled(True)
     ## Training 
     # local_src_data = None
-    #for batch_idx, (inputs, labels) in tqdm(enumerate(dset_loaders), total = len(dset_loaders['train'])):
     for batch_idx, (inputs, labels) in enumerate(dset_loaders):
         optimizer.zero_grad()
         inputs = cvt_to_gpu(inputs)
         labels = cvt_to_gpu(labels)
         outputs = model(inputs)
-        print(outputs.shape)
-        print(labels.shape)
+        #print(outputs.shape) 32 x 5005 
+        #print(labels.shape)
         loss = criterion(outputs, labels.float())
         running_loss += loss*inputs.shape[0]
         loss.backward()
@@ -177,9 +176,9 @@ for epoch in range(args.num_epochs):
         ############################################
         _, preds = torch.max(outputs.data, 1)
         _, tmplabel = torch.max(labels.data, 1)
-        print(preds.shape)
+
         # topk 
-        #top3correct, _ = mytopk(outputs.data.cpu().numpy(), labels, KTOP)
+        top3correct, _ = mytopk(outputs.data.cpu().numpy(), labels, KTOP)
         #runnning_topk_corrects += top3correct
         # pdb.set_trace()
         running_loss += loss.item()
@@ -219,6 +218,7 @@ for epoch in range(args.num_epochs):
     print_eta(t0, epoch, args.num_epochs)
 
     ###################################
+    '''
     ## Validation
     if (epoch + 1) % args.check_after == 0:
         # Validation 
