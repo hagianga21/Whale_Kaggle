@@ -176,13 +176,14 @@ for epoch in range(args.num_epochs):
         optimizer.step()
         ############################################
         _, preds = torch.max(outputs.data, 1)
+        _, tmplabel = torch.max(labels.data, 1)
         print(preds.shape)
         # topk 
         #top3correct, _ = mytopk(outputs.data.cpu().numpy(), labels, KTOP)
         #runnning_topk_corrects += top3correct
         # pdb.set_trace()
         running_loss += loss.item()
-        running_corrects += preds.eq(torch.max(labels.data, 1)).cpu().sum()
+        running_corrects += preds.eq(tmplabel).cpu().sum()
         tot += labels.size(0)
         sys.stdout.write('\r')
         try:
