@@ -168,7 +168,7 @@ for epoch in range(args.num_epochs):
         labels = cvt_to_gpu(labels)
         outputs = model(inputs)
         #print(outputs.shape) 32 x 5005 
-        #print(labels.shape)
+        #print(labels.shape) 32 x 5005
         loss = criterion(outputs, labels.float())
         running_loss += loss*inputs.shape[0]
         loss.backward()
@@ -178,7 +178,7 @@ for epoch in range(args.num_epochs):
         _, tmplabel = torch.max(labels.data, 1)
 
         # topk 
-        top3correct, _ = mytopk(outputs.data.cpu().numpy(), labels, KTOP)
+        top3correct, _ = mytopk(outputs.data.cpu().numpy(), tmplabel, KTOP)
         #runnning_topk_corrects += top3correct
         # pdb.set_trace()
         running_loss += loss.item()
