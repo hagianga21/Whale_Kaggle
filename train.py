@@ -176,7 +176,7 @@ for epoch in range(args.num_epochs):
         outputs = model(inputs)
         #print(outputs.shape) 32 x 5005 
         #print(labels.shape) 32 x 5005
-        loss = criterion(outputs, labels.float())
+        loss = criterion(outputs, labels.long())
         running_loss += loss*inputs.shape[0]
         loss.backward()
         optimizer.step()
