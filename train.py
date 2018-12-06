@@ -25,8 +25,8 @@ parser.add_argument('--weight_decay', default=5e-6, type=float, help='weight dec
 parser.add_argument('--finetune', '-f', action='store_true', help='Fine tune pretrained model')
 parser.add_argument('--trainer', default='adam', type = str, help = 'optimizer')
 parser.add_argument('--model_path', type=str, default = ' ')
-parser.add_argument('--batch_size', default=64, type=int)
-parser.add_argument('--num_workers', default=1, type=int)
+parser.add_argument('--batch_size', default=16, type=int)
+parser.add_argument('--num_workers', default=4, type=int)
 parser.add_argument('--num_epochs', default=1500, type=int,
                     help='Number of epochs in training')
 parser.add_argument('--dropout_keep_prob', default=0.5, type=float)
