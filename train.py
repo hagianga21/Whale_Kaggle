@@ -20,12 +20,12 @@ from tqdm import tqdm
 parser = argparse.ArgumentParser(description='PyTorch Digital Mammography Training')
 parser.add_argument('--lr', default=1e-2, type=float, help='learning rate')
 parser.add_argument('--net_type', default='resnet', type=str, help='model')
-parser.add_argument('--depth', default=50, choices = [18, 34, 50, 152], type=int, help='depth of model')
+parser.add_argument('--depth', default=152, choices = [18, 34, 50, 152], type=int, help='depth of model')
 parser.add_argument('--weight_decay', default=5e-6, type=float, help='weight decay')
 parser.add_argument('--finetune', '-f', action='store_true', help='Fine tune pretrained model')
 parser.add_argument('--trainer', default='adam', type = str, help = 'optimizer')
 parser.add_argument('--model_path', type=str, default = ' ')
-parser.add_argument('--batch_size', default=32, type=int)
+parser.add_argument('--batch_size', default=64, type=int)
 parser.add_argument('--num_workers', default=1, type=int)
 parser.add_argument('--num_epochs', default=1500, type=int,
                     help='Number of epochs in training')
@@ -62,6 +62,7 @@ print('Loading data...')
 train_df = pd.read_csv("../data/train.csv")
 y, label_encoder = prepare_labels(train_df['Id'])
 train_labels = y
+
 print(f"There are {len(os.listdir('../data/train'))} images in train dataset with {train_df.Id.nunique()} unique classes.")
 print(f"There are {len(os.listdir('../data/test'))} images in test dataset.")
 
@@ -144,8 +145,8 @@ else:
 
 ##################
 print('Start training ... ')
-#criterion = nn.CrossEntropyLoss()
-criterion = nn.BCEWithLogitsLoss()
+criterion = nn.CrossEntropyLoss()
+#criterion = nn.BCEWithLogitsLoss()
 model, optimizer = net_frozen(args, model)
 model = parallelize_model(model)
 
