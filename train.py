@@ -20,7 +20,7 @@ from tqdm import tqdm
 parser = argparse.ArgumentParser(description='PyTorch Digital Mammography Training')
 parser.add_argument('--lr', default=1e-2, type=float, help='learning rate')
 parser.add_argument('--net_type', default='resnet', type=str, help='model')
-parser.add_argument('--depth', default=152, choices = [18, 34, 50, 152], type=int, help='depth of model')
+parser.add_argument('--depth', default=50, choices = [18, 34, 50, 152], type=int, help='depth of model')
 parser.add_argument('--weight_decay', default=5e-6, type=float, help='weight decay')
 parser.add_argument('--finetune', '-f', action='store_true', help='Fine tune pretrained model')
 parser.add_argument('--trainer', default='adam', type = str, help = 'optimizer')
@@ -130,7 +130,7 @@ dset_loaders = {
 
 ########## 
 print('Load model')
-saved_model_fn = 'resnet' + '-%s' % (args.depth) + '_' + strftime('%m%d_%H%M')
+saved_model_fn = 'resnet' + '-%s' % (args.depth) + '_' + strftime('%m%d') + '_' + '%s' %(args.batch_size)
 old_model = './checkpoint/' + 'resnet' + '-%s' % (args.depth) + '_' + args.model_path + '.t7'
 if args.train_from == 2 and os.path.isfile(old_model):
     print("| Load pretrained at  %s..." % old_model)
