@@ -78,7 +78,13 @@ std=[0.229, 0.224, 0.225]
 
 data_transforms =  transforms.Compose([
         transforms.RandomResizedCrop(input_size),
+        transforms.RandomRotation(20, expand = True),
         transforms.RandomHorizontalFlip(),  # simple data augmentation
+        transforms.ColorJitter(brightness=0.4,
+                               contrast=0.4,
+                               saturation=0.4,
+                               hue=0.2),
+
         transforms.ToTensor(),
         transforms.Normalize(mean, std)
         ])
