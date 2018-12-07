@@ -25,7 +25,7 @@ parser.add_argument('--weight_decay', default=5e-6, type=float, help='weight dec
 parser.add_argument('--finetune', '-f', action='store_true', help='Fine tune pretrained model')
 parser.add_argument('--trainer', default='adam', type = str, help = 'optimizer')
 parser.add_argument('--model_path', type=str, default = ' ')
-parser.add_argument('--batch_size', default=24, type=int)
+parser.add_argument('--batch_size', default=32, type=int)
 parser.add_argument('--num_workers', default=4, type=int)
 parser.add_argument('--num_epochs', default=1500, type=int,
                     help='Number of epochs in training')
@@ -116,7 +116,7 @@ train_dataset= WhaleDataset(
 #dsets['train'] = WhaleDataset(datafolder='../data/train/', filenames=train_img, y=train_labels, transform=data_transforms['train'])
 #dsets['val'] = WhaleDataset(datafolder='../data/train/', filenames=val_img, y=val_labels, transform=data_transforms['val'])
 
-dset_loaders = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, pin_memory=True)
+dset_loaders = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
 '''
 dset_loaders = {
     x: torch.utils.data.DataLoader(dsets[x],
