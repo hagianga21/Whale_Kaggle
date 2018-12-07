@@ -85,9 +85,8 @@ data_transforms =  transforms.Compose([
                                contrast=0.4,
                                saturation=0.4,
                                hue=0.2),
-
-        transforms.ToTensor(),
         transforms.RandomGrayscale(),
+        transforms.ToTensor(),
         transforms.Normalize(mean, std)
         ])
 '''
