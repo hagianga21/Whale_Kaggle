@@ -87,6 +87,7 @@ data_transforms =  transforms.Compose([
                                hue=0.2),
 
         transforms.ToTensor(),
+        transforms.RandomGrayscale(),
         transforms.Normalize(mean, std)
         ])
 '''
@@ -116,7 +117,7 @@ train_dataset= WhaleDataset(
 #dsets['train'] = WhaleDataset(datafolder='../data/train/', filenames=train_img, y=train_labels, transform=data_transforms['train'])
 #dsets['val'] = WhaleDataset(datafolder='../data/train/', filenames=val_img, y=val_labels, transform=data_transforms['val'])
 
-dset_loaders = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
+dset_loaders = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True, pin_memory=True)
 '''
 dset_loaders = {
     x: torch.utils.data.DataLoader(dsets[x],
