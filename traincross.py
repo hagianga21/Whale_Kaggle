@@ -27,7 +27,7 @@ parser.add_argument('--finetune', '-f', action='store_true', help='Fine tune pre
 parser.add_argument('--trainer', default='adam', type = str, help = 'optimizer')
 parser.add_argument('--model_path', type=str, default = ' ')
 parser.add_argument('--batch_size', default=32, type=int)
-parser.add_argument('--num_workers', default=-1, type=int)
+parser.add_argument('--num_workers', default=8, type=int)
 parser.add_argument('--num_epochs', default=1500, type=int,
                     help='Number of epochs in training')
 parser.add_argument('--dropout_keep_prob', default=0.5, type=float)
@@ -123,7 +123,7 @@ dataval_transforms = transforms.Compose([
         transforms.RandomGrayscale(),
         transforms.ToTensor(),
         transforms.Normalize(mean, std)
-        ]),
+        ])
 
 ########## 
 print('Load model')
@@ -169,7 +169,7 @@ for epoch in range(args.num_epochs):
     model.train()
     torch.set_grad_enabled(True)
 
-    for batch_idx, (inputs, labels) in enumerate(dset_loaders):
+    for batch_idx, (inputs, labels) in enumerate(valset_loaders):
         optimizer.zero_grad()
         inputs = cvt_to_gpu(inputs)
         labels = cvt_to_gpu(labels)
