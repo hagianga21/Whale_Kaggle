@@ -147,8 +147,8 @@ criterion = nn.CrossEntropyLoss()
 model, optimizer = net_frozen(args, model)
 model = parallelize_model(model)
 
-N_train = len(train_labels)
-#N_valid = len(val_labels)
+N_train = len(label_train[0])
+N_valid = len(label_val[0])
 best_top3 = 1 
 t0 = time()
 
@@ -169,7 +169,7 @@ for epoch in range(args.num_epochs):
     model.train()
     torch.set_grad_enabled(True)
 
-    for batch_idx, (inputs, labels) in enumerate(valset_loaders):
+    for batch_idx, (inputs, labels) in enumerate(dset_loaders):
         optimizer.zero_grad()
         inputs = cvt_to_gpu(inputs)
         labels = cvt_to_gpu(labels)
