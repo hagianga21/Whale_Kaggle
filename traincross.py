@@ -26,7 +26,7 @@ parser.add_argument('--weight_decay', default=5e-6, type=float, help='weight dec
 parser.add_argument('--finetune', '-f', action='store_true', help='Fine tune pretrained model')
 parser.add_argument('--trainer', default='adam', type = str, help = 'optimizer')
 parser.add_argument('--model_path', type=str, default = ' ')
-parser.add_argument('--batch_size', default=4, type=int)
+parser.add_argument('--batch_size', default=32, type=int)
 parser.add_argument('--num_workers', default=0, type=int)
 parser.add_argument('--num_epochs', default=1500, type=int,
                     help='Number of epochs in training')
@@ -163,6 +163,7 @@ for epoch in range(args.num_epochs):
     print('=> Training Epoch #%d, LR=%.10f' % (epoch + 1, lr))
 
     running_loss, running_corrects, tot = 0.0, 0.0, 0.0
+    runnning_topk_corrects = 0.0
     model.train()
     torch.set_grad_enabled(True)
 

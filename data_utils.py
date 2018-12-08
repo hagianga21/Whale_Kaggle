@@ -70,7 +70,6 @@ class WhaleDataset2(Dataset):
         return len(self.filenames)
 
     def __getitem__(self, idx):
-        print(idx)
         img_name = os.path.join(self.datafolder,self.filenames[idx])
         label = self.labels[idx]
 
