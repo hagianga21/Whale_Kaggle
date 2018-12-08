@@ -27,7 +27,7 @@ parser.add_argument('--finetune', '-f', action='store_true', help='Fine tune pre
 parser.add_argument('--trainer', default='adam', type = str, help = 'optimizer')
 parser.add_argument('--model_path', type=str, default = ' ')
 parser.add_argument('--batch_size', default=32, type=int)
-parser.add_argument('--num_workers', default=0, type=int)
+parser.add_argument('--num_workers', default=-1, type=int)
 parser.add_argument('--num_epochs', default=1500, type=int,
                     help='Number of epochs in training')
 parser.add_argument('--dropout_keep_prob', default=0.5, type=float)
@@ -101,6 +101,8 @@ std=[0.229, 0.224, 0.225]
 datatrain_transforms =  transforms.Compose([
         transforms.RandomResizedCrop(input_size),
         transforms.RandomRotation(20),
+        transforms.RandomRotation((70, 90)),
+        transforms.RandomAffine(20),
         transforms.RandomHorizontalFlip(),  # simple data augmentation
         transforms.ColorJitter(brightness=0.4,
                                contrast=0.4,
@@ -222,3 +224,29 @@ for epoch in range(args.num_epochs):
             % (epoch_loss, top1error, top3error))
 
     print_eta(t0, epoch, args.num_epochs)
+
+    ## Validation
+    if (epoch + 1) % args.check_after == 0:
+        # Validation 
+        running_loss, running_corrects, tot = 0.0, 0.0, 0.0
+        runnning_topk_corrects = 0
+        torch.set_grad_enabled(False)
+        model.eval()
+        for batch_idx, (inputs, labels) in enumerate(valset_loaders):
+            inputs = cvt_to_gpu(inputs)
+            labels = cvt_to_gpu(labels)
+            outputs = model(inputs)
+            _, preds  = torch.max(outputs.data, 1)
+            _, tmplabel = torch.max(labels.data, 1)
+
+            top3correct, top3error = mytopk(outputs.data.cpu().numpy(), tmplabel, KTOP)
+            runnning_topk_corrects += top3correct
+            running_loss += loss.item()
+            running_corrects += preds.eq(tmplabel).cpu().sum()
+            tot += labels.size(0)
+
+        epoch_loss = running_loss / N_valid 
+        top1error = 1 - float(running_corrects)/N_valid
+        top3error = 1 - float(runnning_topk_corrects)/N_valid
+        print('| Validation loss %.4f\tTop1error %.4f \tTop3error: %.4f'\
+                % (epoch_loss, top1error, top3error))
