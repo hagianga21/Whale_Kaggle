@@ -250,3 +250,23 @@ for epoch in range(args.num_epochs):
     top3error = 1 - float(runnning_topk_corrects)/N_valid
     print('| Validation loss %.4f\tTop1error %.4f \tTop3error: %.4f'\
           % (epoch_loss, top1error, top3error))
+
+    ################### save model based on best top3 error
+    if top3error < best_top3:
+        print('Saving model')
+        best_top3 = top3error
+        best_model = copy.deepcopy(model)
+        state = {
+                'model': best_model,
+                'top3' : best_top3,
+                'args': args
+        }
+        if not os.path.isdir('checkpoint'):
+                os.mkdir('checkpoint')
+        save_point = './checkpoint/'
+        if not os.path.isdir(save_point):
+                os.mkdir(save_point)
+
+        torch.save(state, save_point + saved_model_fn + '.t7')
+        print('=======================================================================')
+        print('model saved to %s' % (save_point + saved_model_fn + '.t7'))
