@@ -248,8 +248,9 @@ for epoch in range(args.num_epochs):
     epoch_loss = running_loss / N_valid 
     top1error = 1 - float(running_corrects)/N_valid
     top3error = 1 - float(runnning_topk_corrects)/N_valid
-    print('| Validation loss %.4f\tTop1error %.4f \tTop3error: %.4f'\
-          % (epoch_loss, top1error, top3error))
+    print('| Validation loss %.4f\tTop1error %.4f \tTop3error: %.4f \tBestTop3error: %.4f'\
+          % (epoch_loss, top1error, top3error, best_top3))
+    print('Best t')
 
     ################### save model based on best top3 error
     if top3error < best_top3:
