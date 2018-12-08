@@ -226,27 +226,27 @@ for epoch in range(args.num_epochs):
     print_eta(t0, epoch, args.num_epochs)
 
     ## Validation
-    if (epoch + 1) % args.check_after == 0:
-        # Validation 
-        running_loss, running_corrects, tot = 0.0, 0.0, 0.0
-        runnning_topk_corrects = 0
-        torch.set_grad_enabled(False)
-        model.eval()
-        for batch_idx, (inputs, labels) in enumerate(valset_loaders):
-            inputs = cvt_to_gpu(inputs)
-            labels = cvt_to_gpu(labels)
-            outputs = model(inputs)
-            _, preds  = torch.max(outputs.data, 1)
-            _, tmplabel = torch.max(labels.data, 1)
+    print("Ready for Validation\n")
+    # Validation 
+    running_loss, running_corrects, tot = 0.0, 0.0, 0.0
+    runnning_topk_corrects = 0
+    torch.set_grad_enabled(False)
+    model.eval()
+    for batch_idx, (inputs, labels) in enumerate(valset_loaders):
+        inputs = cvt_to_gpu(inputs)
+        labels = cvt_to_gpu(labels)
+        outputs = model(inputs)
+        _, preds  = torch.max(outputs.data, 1)
+        _, tmplabel = torch.max(labels.data, 1)
 
-            top3correct, top3error = mytopk(outputs.data.cpu().numpy(), tmplabel, KTOP)
-            runnning_topk_corrects += top3correct
-            running_loss += loss.item()
-            running_corrects += preds.eq(tmplabel).cpu().sum()
-            tot += labels.size(0)
+        top3correct, top3error = mytopk(outputs.data.cpu().numpy(), tmplabel, KTOP)
+        runnning_topk_corrects += top3correct
+        running_loss += loss.item()
+        running_corrects += preds.eq(tmplabel).cpu().sum()
+        tot += labels.size(0)
 
-        epoch_loss = running_loss / N_valid 
-        top1error = 1 - float(running_corrects)/N_valid
-        top3error = 1 - float(runnning_topk_corrects)/N_valid
-        print('| Validation loss %.4f\tTop1error %.4f \tTop3error: %.4f'\
-                % (epoch_loss, top1error, top3error))
+    epoch_loss = running_loss / N_valid 
+    top1error = 1 - float(running_corrects)/N_valid
+    top3error = 1 - float(runnning_topk_corrects)/N_valid
+    print('| Validation loss %.4f\tTop1error %.4f \tTop3error: %.4f'\
+          % (epoch_loss, top1error, top3error))
