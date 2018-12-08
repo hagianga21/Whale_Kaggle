@@ -77,7 +77,147 @@ X = train_df['Image'].values
 print(X.shape)
 print(y.shape)
 
+img_train = dict()
+label_train = dict()
+img_val = dict()
+label_val = dict()
+k = 0
+
 for train, val in kford.split(X):
     print('train: %s, test: %s' % (train, val))
-    X[train]
-    X[val]
+    img_train[k] = X[train]
+    img_val[k] = X[val]
+    label_train[k] = y[train]
+    label_val[k] = y[val]
+    k = k + 1
+
+print(img_train[1].shape)
+print(img_train[1][1])
+
+input_size = 224 
+mean=[0.485, 0.456, 0.406]
+std=[0.229, 0.224, 0.225]
+
+datatrain_transforms =  transforms.Compose([
+        transforms.RandomResizedCrop(input_size),
+        transforms.RandomRotation(20),
+        transforms.RandomHorizontalFlip(),  # simple data augmentation
+        transforms.ColorJitter(brightness=0.4,
+                               contrast=0.4,
+                               saturation=0.4,
+                               hue=0.2),
+        transforms.RandomGrayscale(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std)
+        ])
+
+dataval_transforms = transforms.Compose([
+        transforms.Resize(input_size),
+        transforms.CenterCrop(input_size),
+        transforms.ColorJitter(brightness=0.4,
+                               contrast=0.4,
+                               saturation=0.4,
+                               hue=0.2),
+        transforms.RandomGrayscale(),
+        transforms.ToTensor(),
+        transforms.Normalize(mean, std)
+        ]),
+
+########## 
+print('Load model')
+saved_model_fn = 'resnetcross' + '-%s' % (args.depth) + '_' + strftime('%m%d') + '_' + '%s' %(args.batch_size)
+old_model = './checkpoint/' + 'resnet' + '-%s' % (args.depth) + '_' + args.model_path + '.t7'
+if args.train_from == 2 and os.path.isfile(old_model):
+    print("| Load pretrained at  %s..." % old_model)
+    checkpoint = torch.load(old_model, map_location=lambda storage, loc: storage)
+    tmp = checkpoint['model']
+    model = unparallelize_model(tmp)
+    best_top3 = checkpoint['top3']
+    print('previous top3\t%.4f'% best_top3)
+    print('=============================================')
+else:
+    model = MyResNet(args.depth, 5005)
+
+##################
+print('Start training ... ')
+criterion = nn.CrossEntropyLoss()
+#criterion = nn.BCEWithLogitsLoss()
+model, optimizer = net_frozen(args, model)
+model = parallelize_model(model)
+
+N_train = len(train_labels)
+#N_valid = len(val_labels)
+best_top3 = 1 
+t0 = time()
+
+for epoch in range(args.num_epochs):
+    j = epoch%10
+    print('Hello', j)
+    train_dataset= WhaleDataset2(datafolder='../data/train/', datatype='train', filenames = img_train[j], labels = label_train[j], transform=datatrain_transforms)
+    val_dataset= WhaleDataset2(datafolder='../data/train/', datatype='train', filenames = img_val[j], labels = label_val[j], transform=dataval_transforms)
+    dset_loaders = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True, pin_memory=True)
+    valset_loaders = torch.utils.data.DataLoader(val_dataset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True, pin_memory=True)
+
+    optimizer, lr = exp_lr_scheduler(args, optimizer, epoch) 
+    print('#################################################################')
+    print('=> Training Epoch #%d, LR=%.10f' % (epoch + 1, lr))
+
+    running_loss, running_corrects, tot = 0.0, 0.0, 0.0
+    model.train()
+    torch.set_grad_enabled(True)
+
+    for batch_idx, (inputs, labels) in enumerate(dset_loaders):
+        optimizer.zero_grad()
+        inputs = cvt_to_gpu(inputs)
+        labels = cvt_to_gpu(labels)
+        outputs = model(inputs)
+        #print(outputs.shape) 32 x 5005 
+        #print(labels.shape) 32 x 5005
+        #loss = criterion(outputs, labels.float())
+        loss = criterion(outputs, torch.max(labels, 1)[1])
+        running_loss += loss*inputs.shape[0]
+        loss.backward()
+        optimizer.step()
+        ############################################
+        _, preds = torch.max(outputs.data, 1)
+        _, tmplabel = torch.max(labels.data, 1)
+
+        # topk 
+        top3correct, _ = mytopk(outputs.data.cpu().numpy(), tmplabel, KTOP)
+        runnning_topk_corrects += top3correct
+        # pdb.set_trace()
+        running_loss += loss.item()
+        running_corrects += preds.eq(tmplabel).cpu().sum()
+        tot += labels.size(0)
+        sys.stdout.write('\r')
+        try:
+            batch_loss = loss.item()
+        except NameError:
+            batch_loss = 0
+
+        top1error = 1 - float(running_corrects)/tot
+        top3error = 1 - float(runnning_topk_corrects)/tot
+        '''
+        sys.stdout.write('| Epoch [%2d/%2d] Iter [%3d/%3d]\tBatch loss %.4f\tTop1error %.4f \tTop3error %.4f'
+                         % (epoch + 1, args.num_epochs, batch_idx + 1,
+                            (len(train_img) // args.batch_size), batch_loss/args.batch_size,
+                            top1error, top3error))
+        '''
+        sys.stdout.write('| Epoch [%2d/%2d] Iter [%3d/%3d]\tBatch loss %.4f\tTop1error %.4f \tTop3error %.4f\n'
+                         % (epoch + 1, args.num_epochs, batch_idx + 1,
+                            (len(os.listdir('../data/train')) // args.batch_size), batch_loss/args.batch_size,
+                            top1error, top3error))
+        sys.stdout.flush()
+        sys.stdout.write('\r')
+
+    top1error = 1 - float(running_corrects)/N_train
+    top3error = 1 - float(runnning_topk_corrects)/N_train
+    epoch_loss = running_loss/N_train
+    '''
+    print('\n| Training loss %.4f\tTop1error %.4f \tTop3error: %.4f'\
+            % (epoch_loss, top1error, top3error))
+    '''
+    print('\n| Training loss %.4f\tTop1error %.4f \tTop3error: %.4f'\
+            % (epoch_loss, top1error, top3error))
+
+    print_eta(t0, epoch, args.num_epochs)

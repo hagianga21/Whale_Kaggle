@@ -57,34 +57,27 @@ class WhaleDataset(Dataset):
         elif self.datatype == 'test':
             # so that the images will be in a correct order
             return image, label, self.image_files_list[idx]
-'''            
-class WhaleDataset(Dataset):
-    def __init__(self, datafolder, filenames=None, y=None, transform=None):
-        assert len(filenames) == len(y), "Number of files != number of labels"
+            
+class WhaleDataset2(Dataset):
+    def __init__(self, datafolder, datatype='train', filenames=None, labels=None, transform=None):
+        assert len(filenames) == len(labels), "Number of files != number of labels"
         self.datafolder = datafolder
-        self.y = y
+        self.labels = labels
         self.filenames = filenames
-        self.image_files_list = [s for s in os.listdir(datafolder)]
         self.transform = transform
 
     def __len__(self):
-        return len(self.image_files_list)
+        return len(self.filenames)
 
     def __getitem__(self, idx):
         print(idx)
-        img_path = os.path.join(self.file_path,self.df.Image[idx])
-        label = self.df.Id[idx]
-        img_name = os.path.join(self.datafolder, self.filenames.iloc[idx])
-        label = self.y[idx]
+        img_name = os.path.join(self.datafolder,self.filenames[idx])
+        label = self.labels[idx]
 
         image = Image.open(img_name).convert('RGB')
         image = self.transform(image)
-        print("ok")
-        #image = cv2.imread(img_name)
-        #image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        #image = self.transform(image=image)['image']
-        return image, self.y[idx]
-'''
+        return image, label
+
 def prepare_labels(y):
     values = np.array(y)
     label_encoder = LabelEncoder()
