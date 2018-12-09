@@ -128,7 +128,7 @@ dataval_transforms = transforms.Compose([
 ########## 
 print('Load model')
 saved_model_fn = 'resnetcross' + '-%s' % (args.depth) + '_' + strftime('%m%d') + '_' + '%s' %(args.batch_size)
-old_model = './checkpoint/' + 'resnet' + '-%s' % (args.depth) + '_' + args.model_path + '.t7'
+old_model = './checkpoint/' + 'resnetcross' + '-%s' % (args.depth) + '_' + args.model_path + '.t7'
 if args.train_from == 2 and os.path.isfile(old_model):
     print("| Load pretrained at  %s..." % old_model)
     checkpoint = torch.load(old_model, map_location=lambda storage, loc: storage)
