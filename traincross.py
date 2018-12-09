@@ -53,7 +53,8 @@ def exp_lr_scheduler(args, optimizer, epoch):
     init_lr = args.lr
     lr_decay_epoch = 4 # decay lr after each 10 epoch
     weight_decay = args.weight_decay
-    lr = init_lr * (0.6 ** (min(epoch, 200) // lr_decay_epoch)) 
+    temp = epoch//10 #Sau 10 epoch moi thay learning rate 1 lan
+    lr = init_lr * (0.6 ** (min(temp, 2000) // lr_decay_epoch)) 
 
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
@@ -150,8 +151,11 @@ model = parallelize_model(model)
 N_train = len(label_train[0])
 N_valid = len(label_val[0])
 best_top3 = 1 
+best_epoch = 0
 t0 = time()
 
+ValidationTop1Error = np.ones(10)
+ValidationTop5Error = np.ones(10)
 for epoch in range(args.num_epochs):
     j = epoch%10
     print('Hello', j)
@@ -229,37 +233,43 @@ for epoch in range(args.num_epochs):
         labels = cvt_to_gpu(labels)
         outputs = model(inputs)
         _, preds  = torch.max(outputs.data, 1)
-        _, tmplabel = torch.max(labels.data, 1)
+        _, tmpVallabel = torch.max(labels.data, 1)
 
-        top3correct, top3error = mytopk(outputs.data.cpu().numpy(), tmplabel, KTOP)
+        top3correct, top3error = mytopk(outputs.data.cpu().numpy(), tmpVallabel, KTOP)
         runnning_topk_corrects += top3correct
         running_loss += loss.item()
-        running_corrects += preds.eq(tmplabel).cpu().sum()
+        running_corrects += preds.eq(tmpVallabel).cpu().sum()
         tot += labels.size(0)
 
     epoch_loss = running_loss / N_valid 
     top1error = 1 - float(running_corrects)/N_valid
+    ValidationTop1Error[j] = top1error
     top3error = 1 - float(runnning_topk_corrects)/N_valid
-    print('| Validation loss %.4f\tTop1error %.4f \tTop3error: %.4f \tBestTop3error: %.4f'\
-          % (epoch_loss, top1error, top3error, best_top3))
-    print('Best t')
+    ValidationTop5Error[j] = top3error
+
+    if j == 9:
+        top1error = np.mean(ValidationTop1Error)
+        top3error = np.mean(ValidationTop5Error)
+        print('| Validation loss %.4f\tTop1error %.4f \tTop3error: %.4f \tBestTop3error: %.4f at best epoch: %.4f'\
+                % (epoch_loss, top1error, top3error, best_top3, best_epoch))
 
     ################### save model based on best top3 error
-    if top3error < best_top3:
-        print('Saving model')
-        best_top3 = top3error
-        best_model = copy.deepcopy(model)
-        state = {
-                'model': best_model,
-                'top3' : best_top3,
-                'args': args
-        }
-        if not os.path.isdir('checkpoint'):
-                os.mkdir('checkpoint')
-        save_point = './checkpoint/'
-        if not os.path.isdir(save_point):
-                os.mkdir(save_point)
+        if top3error < best_top3:
+                print('Saving model')
+                best_top3 = top3error
+                best_epoch = epoch
+                best_model = copy.deepcopy(model)
+                state = {
+                        'model': best_model,
+                        'top3' : best_top3,
+                        'args': args
+                }
+                if not os.path.isdir('checkpoint'):
+                        os.mkdir('checkpoint')
+                save_point = './checkpoint/'
+                if not os.path.isdir(save_point):
+                        os.mkdir(save_point)
 
-        torch.save(state, save_point + saved_model_fn + '.t7')
-        print('=======================================================================')
-        print('model saved to %s' % (save_point + saved_model_fn + '.t7'))
+                torch.save(state, save_point + saved_model_fn + '.t7')
+                print('=======================================================================')
+                print('model saved to %s' % (save_point + saved_model_fn + '.t7'))
