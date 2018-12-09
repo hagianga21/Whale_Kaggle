@@ -247,10 +247,16 @@ for epoch in range(args.num_epochs):
     top3error = 1 - float(runnning_topk_corrects)/N_valid
     ValidationTop5Error[j] = top3error
 
+    print('| Validation loss %.4f\tTop1error %.4f \tTop3error: %.4f \tBestTop3error: %.4f at best epoch: %.4f'\
+                % (epoch_loss, top1error, top3error, best_top3, best_epoch))
+
     if j == 9:
         top1error = np.mean(ValidationTop1Error)
         top3error = np.mean(ValidationTop5Error)
-        print('| Validation loss %.4f\tTop1error %.4f \tTop3error: %.4f \tBestTop3error: %.4f at best epoch: %.4f'\
+        print('==============================================\n')
+        print('=================This is Real=================\n')
+        print('==============================================\n')
+        print('=========| Validation loss %.4f\tTop1error %.4f \tTop3error: %.4f \tBestTop3error: %.4f at best epoch: %.4f'\
                 % (epoch_loss, top1error, top3error, best_top3, best_epoch))
 
     ################### save model based on best top3 error
