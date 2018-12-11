@@ -49,7 +49,7 @@ train_df = pd.read_csv("../data/train.csv")
 y, label_encoder = prepare_labels(train_df['Id'])
 
 test_transforms = transforms.Compose([
-        transforms.Resize(input_size),
+        transforms.Resize((224, 224)),
         #transforms.CenterCrop(input_size),
         transforms.ToTensor(),
         transforms.Normalize(mean, std)
