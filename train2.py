@@ -53,8 +53,7 @@ def exp_lr_scheduler(args, optimizer, epoch):
     init_lr = args.lr
     lr_decay_epoch = 4 # decay lr after each 10 epoch
     weight_decay = args.weight_decay
-    temp = epoch//10 #Sau 10 epoch moi thay learning rate 1 lan
-    lr = init_lr * (0.6 ** (min(temp, 2000) // lr_decay_epoch)) 
+    lr = init_lr * (0.6 ** (min(epoch, 200) // lr_decay_epoch))  
 
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
