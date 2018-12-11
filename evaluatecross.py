@@ -50,7 +50,7 @@ y, label_encoder = prepare_labels(train_df['Id'])
 
 test_transforms = transforms.Compose([
         transforms.Resize(input_size),
-        transforms.CenterCrop(input_size),
+        #transforms.CenterCrop(input_size),
         transforms.ToTensor(),
         transforms.Normalize(mean, std)
     ])
